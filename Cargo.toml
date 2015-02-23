@@ -3,3 +3,6 @@
 name = "mozprofile"
 version = "0.0.1"
 authors = ["James Graham <james@hoppipolla.co.uk>"]
+
+[dependencies]
+log = "0.2.4"

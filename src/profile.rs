@@ -1,16 +1,16 @@
-use std::path::Path;
-use std::io::{File, IoResult, TempDir};
+use std::old_path::Path;
+use std::old_io::{File, IoResult, TempDir};
 
 use preferences::{Preferences, PrefValue};
 
 pub struct Profile {
     pub path: Path,
     pub preferences: Preferences,
-    temp_dir: Option<TempDir>
+    pub temp_dir: Option<TempDir>
 }
 
 impl Profile {
-    pub fn new(mut opt_path: Option<Path>) -> IoResult<Profile> {
+    pub fn new(opt_path: Option<Path>) -> IoResult<Profile> {
         let mut temp_dir = None;
         let path = match opt_path {
             Some(p) => p,
@@ -41,7 +41,7 @@ impl Profile {
                 PrefValue::PrefString(ref x) => format!("\"{}\"", x),
                 PrefValue::PrefInt(ref x) => format!("{}", x)
             };
-            prefs_file.write_str(format!("user_pref(\"{}\", {});\n", key, value_str).as_slice());
+            try!(prefs_file.write_str(&format!("user_pref(\"{}\", {});\n", key, value_str)[..]));
         }
 
         Ok(())
