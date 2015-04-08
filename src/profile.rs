@@ -1,26 +1,30 @@
-use std::old_path::Path;
-use std::old_io::{File, IoResult, TempDir};
-
+use std::io::prelude::*;
+use std::path::{Path, PathBuf};
+use std::fs::File;
+use tempdir::TempDir;
+use std::io::Result as IoResult;
 use preferences::{Preferences, PrefValue};
 
 pub struct Profile {
-    pub path: Path,
+    pub path: PathBuf,
     pub preferences: Preferences,
     pub temp_dir: Option<TempDir>
 }
 
 impl Profile {
-    pub fn new(opt_path: Option<Path>) -> IoResult<Profile> {
+    pub fn new(opt_path: Option<&Path>) -> IoResult<Profile> {
         let mut temp_dir = None;
         let path = match opt_path {
-            Some(p) => p,
+            Some(p) => p.to_path_buf(),
             None => {
-                temp_dir = Some(try!(TempDir::new("rust_mozprofile")));
-                temp_dir.as_ref().unwrap().path().clone()
+                let dir = try!(TempDir::new("rust_mozprofile"));
+                let temp_path = dir.path().to_path_buf();
+                temp_dir = Some(dir);
+                temp_path
             }
         };
 
-        debug!("Using profile path {}", path.as_str().unwrap());
+        debug!("Using profile path {}", path.to_str().unwrap());
 
         Ok(Profile {
             path: path,
@@ -41,7 +45,8 @@ impl Profile {
                 PrefValue::PrefString(ref x) => format!("\"{}\"", x),
                 PrefValue::PrefInt(ref x) => format!("{}", x)
             };
-            try!(prefs_file.write_str(&format!("user_pref(\"{}\", {});\n", key, value_str)[..]));
+            try!(prefs_file.write(
+                &format!("user_pref(\"{}\", {});\n", key, value_str)[..].as_bytes()));
         }
 
         Ok(())

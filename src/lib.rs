@@ -1,14 +1,17 @@
-#![feature(old_io)]
-#![feature(old_path)]
+#![feature(io)]
+#![feature(path)]
+
 #[macro_use]
 extern crate log;
+
+extern crate tempdir;
 
 pub mod profile;
 pub mod preferences;
 
 #[cfg(test)]
 mod test {
-    use std::old_io::{File};
+    use std::fs::File;
     use profile::Profile;
     use preferences::PrefValue;
 
