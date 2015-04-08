@@ -1,9 +1,9 @@
 [package]
 
 name = "mozprofile"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["James Graham <james@hoppipolla.co.uk>"]
 
 [dependencies]
 log = "0.3.1"
-tempdir = "0.3.0"
+tempdir = "0.3.4"

@@ -1,6 +1,3 @@
-#![feature(io)]
-#![feature(path)]
-
 #[macro_use]
 extern crate log;
 
