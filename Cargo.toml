@@ -2,7 +2,7 @@
 
 name = "mozprofile"
 version = "0.1.0"
-authors = ["James Graham <james@hoppipolla.co.uk>"]
+authors = ["Mozilla Tools and Automation <auto-tools@mozilla.com>"]
 
 [dependencies]
 log = "0.3.1"
