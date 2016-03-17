@@ -1,14 +1,17 @@
+use preferences::{Preferences, Pref};
+use prefreader::{parse, serialize, PrefReaderError};
+use std::collections::btree_map::Iter;
+use std::fs::File;
+use std::io::Result as IoResult;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
-use std::fs::File;
 use tempdir::TempDir;
-use std::io::Result as IoResult;
-use preferences::{Preferences, PrefValue};
 
 pub struct Profile {
     pub path: PathBuf,
-    pub preferences: Preferences,
-    pub temp_dir: Option<TempDir>
+    pub temp_dir: Option<TempDir>,
+    prefs: Option<PrefFile>,
+    user_prefs: Option<PrefFile>
 }
 
 impl Profile {
@@ -24,31 +27,89 @@ impl Profile {
             }
         };
 
-        debug!("Using profile path {}", path.to_str().unwrap());
+        info!("Using profile path {}", path.to_str().unwrap());
 
         Ok(Profile {
             path: path,
-            preferences: Preferences::new(),
-            temp_dir: temp_dir
+            temp_dir: temp_dir,
+            prefs: None,
+            user_prefs: None
         })
     }
 
-    pub fn write_prefs(&self) -> IoResult<()> {
-        let prefs_path = self.path.join("user.js");
+    pub fn prefs(&mut self) -> Result<&mut PrefFile, PrefReaderError> {
+        if self.prefs.is_none() {
+            let mut pref_path = PathBuf::from(&self.path);
+            pref_path.push("prefs.js");
+            self.prefs = Some(try!(PrefFile::new(pref_path)))
+        };
+        // This error handling doesn't make much sense
+        Ok(self.prefs.as_mut().unwrap())
+    }
 
-        let mut prefs_file = try!(File::create(&prefs_path));
+    pub fn user_prefs(&mut self) -> Result<&mut PrefFile, PrefReaderError> {
+        if self.user_prefs.is_none() {
+            let mut pref_path = PathBuf::from(&self.path);
+            pref_path.push("user.js");
+            self.user_prefs = Some(try!(PrefFile::new(pref_path)))
+        };
+        // This error handling doesn't make much sense
+        Ok(self.user_prefs.as_mut().unwrap())
+    }
+}
 
-        for (key, value) in self.preferences.iter() {
-            let value_str = match *value {
-                PrefValue::PrefBool(true) => "true".to_string(),
-                PrefValue::PrefBool(false) => "false".to_string(),
-                PrefValue::PrefString(ref x) => format!("\"{}\"", x),
-                PrefValue::PrefInt(ref x) => format!("{}", x)
-            };
-            try!(prefs_file.write(
-                &format!("user_pref(\"{}\", {});\n", key, value_str)[..].as_bytes()));
+pub struct PrefFile {
+    path: PathBuf,
+    pub prefs: Preferences
+}
+
+impl PrefFile {
+    pub fn new(path: PathBuf) -> Result<PrefFile, PrefReaderError> {
+        let prefs = if !path.exists() {
+            Preferences::new()
+        } else {
+            let mut f = try!(File::open(&path));
+            let mut buf = String::with_capacity(4096);
+            try!(f.read_to_string(&mut buf));
+            try!(parse(buf.as_bytes()))
+        };
+
+        Ok(PrefFile {
+            path: path,
+            prefs: prefs
+        })
+    }
+
+    pub fn write(&self) -> IoResult<()> {
+        let mut f = try!(File::create(&self.path));
+        serialize(&self.prefs, &mut f)
+    }
+
+    pub fn insert_slice<K>(&mut self, preferences: &[(K, Pref)])
+        where K: Into<String> + Clone {
+        for &(ref name, ref value) in preferences.iter() {
+            self.insert((*name).clone(), (*value).clone());
         }
+    }
 
-        Ok(())
+    pub fn insert<K>(&mut self, key: K, value: Pref)
+        where K: Into<String> {
+        self.prefs.insert(key.into(), value);
+    }
+
+    pub fn remove(&mut self, key: &str) -> Option<Pref> {
+        self.prefs.remove(key)
+    }
+
+    pub fn get(&mut self, key: &str) -> Option<&Pref> {
+        self.prefs.get(key)
+    }
+
+    pub fn contains_key(&self, key: &str) -> bool {
+        self.prefs.contains_key(key)
+    }
+
+    pub fn iter(&self) -> Iter<String, Pref> {
+        self.prefs.iter()
     }
 }
