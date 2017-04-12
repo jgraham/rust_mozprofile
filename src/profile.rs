@@ -7,11 +7,12 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use tempdir::TempDir;
 
+#[derive(Debug)]
 pub struct Profile {
     pub path: PathBuf,
     pub temp_dir: Option<TempDir>,
     prefs: Option<PrefFile>,
-    user_prefs: Option<PrefFile>
+    user_prefs: Option<PrefFile>,
 }
 
 impl Profile {
@@ -58,9 +59,10 @@ impl Profile {
     }
 }
 
+#[derive(Debug)]
 pub struct PrefFile {
     path: PathBuf,
-    pub prefs: Preferences
+    pub prefs: Preferences,
 }
 
 impl PrefFile {
