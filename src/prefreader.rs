@@ -902,12 +902,9 @@ pub fn parse_tokens<'a>(tokenizer: &mut PrefTokenizer<'a>) -> Result<Preferences
             },
             ParserState::Key => {
                 match token {
-                    PrefToken::String(data, _) => {
-                        current_pref.key = Some(data.into_owned())
-                    }
+                    PrefToken::String(data, _) => current_pref.key = Some(data.into_owned()),
                     _ => {
-                        return return Err(PrefReaderError::new("Expected string",
-                                                               token.position(), None));
+                        return Err(PrefReaderError::new("Expected string", token.position(), None));
                     }
                 }
                 let next = skip_comments(tokenizer);
