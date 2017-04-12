@@ -28,8 +28,6 @@ impl Profile {
             }
         };
 
-        info!("Using profile path {}", path.to_str().unwrap());
-
         Ok(Profile {
             path: path,
             temp_dir: temp_dir,
