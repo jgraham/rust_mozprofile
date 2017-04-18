@@ -1,6 +1,6 @@
 [package]
 name = "mozprofile"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Mozilla Tools and Automation <auto-tools@mozilla.com>"]
 description = "Library for working with Mozilla profiles."
 repository = "https://github.com/jgraham/rust_mozprofile"
