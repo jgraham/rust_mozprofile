@@ -257,21 +257,21 @@ impl<'a> PrefTokenizer<'a> {
     }
 
     fn get_char(&mut self) -> Option<char> {
-        if self.pos >= self.data.len() - 1 {
+        if self.pos as i64 >= self.data.len() as i64 - 1 {
             self.cur = None;
             return None
         };
         if self.cur.is_some() {
             self.pos += 1;
         }
-        let c = self.data[self.pos] as char;
         if self.cur == Some('\n') {
             self.position.line += 1;
             self.position.column = 0;
         } else if self.cur.is_some() {
             self.position.column += 1;
         };
-        self.cur = Some(c);
+        self.cur = self.data.get(self.pos)
+            .map(|c| *c as char);
         self.cur
     }
 

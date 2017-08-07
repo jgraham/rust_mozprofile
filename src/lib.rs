@@ -180,6 +180,14 @@ mod test {
    }
 
     #[test]
+    fn serialize_empty() {
+        let input = "";
+        let expected = "";
+
+        serialize_test(input, expected);
+    }
+
+    #[test]
     fn serialize_simple() {
         let input = "  user_pref /* block comment */ ( 'example.pref.string', 'value' )   ;\n pref(\"example.pref.int\", -123); sticky_pref('example.pref.bool',false)";
         let expected = "sticky_pref(\"example.pref.bool\", false);
